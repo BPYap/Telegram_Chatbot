@@ -1,0 +1,6 @@
+
+*.pyc
+*.log
+pg/district_code.py
+pg/property_code.py
+*.p

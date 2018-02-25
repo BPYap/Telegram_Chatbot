@@ -5,8 +5,8 @@ from telepot.loop import MessageLoop
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from selenium import webdriver
 
-import property_scraping as pscrap
-import nlp
+import pg.property_scraping as pg
+from common import nlp
 
 # initializes web driver
 driver = webdriver.Firefox()
@@ -20,12 +20,12 @@ quit = False # global flag to handle state of program
 user_listing_buffer = {} # store dictionary of chat_id : Listing_buffer
 
 class Listing_buffer:    
-    # To be use to hold more than 5 properties and allow user to tap "show more" to reveal more
+    # Use to hold more than 5 properties and allow user to tap "show more" to reveal more
     def __init__(self):
-        self.property_listings = [] # store list of Property_listing objects
-        self.current_index = 0 # current_index pointing to elements of property_listings
+        self.property_listings = [] # stores list of Property_listing objects
+        self.current_index = 0 # stores current position in user_listing_buffer
 
-def handle_property(chat_id, msg_text, forSale):
+def query_property(chat_id, msg_text, forSale):
     location = nlp.extract_location(msg_text)
     property_type = nlp.extract_property_type(msg_text)
     bot.sendMessage(chat_id, "Searching... Please wait")
@@ -34,7 +34,7 @@ def handle_property(chat_id, msg_text, forSale):
     
     type = "sale" if forSale else "rent"
     print "-------------------------- new property query (" + type + ") ------------------------"
-    user_listing_buffer[chat_id].property_listings = pscrap.get_listing(driver, forSale, location, property_type)
+    user_listing_buffer[chat_id].property_listings = pg.get_listing(driver, forSale, location, property_type)
     
     if (len(user_listing_buffer[chat_id].property_listings) == 0):
         print "attempted to find " + location + ", but not found"
@@ -64,6 +64,11 @@ def handle_property(chat_id, msg_text, forSale):
         send_listing_properties(chat_id)
 
 def send_listing_properties(chat_id):
+    """Sends property listing as message to user.
+    
+    Information includes the property's location, url to listing, price and image.
+    The data came from property_listings associated with each user's chat_id.
+    """
     temp = 1
     max = 5 # maximum results to show, could be configured by user in the future
     property_listings = user_listing_buffer[chat_id].property_listings
@@ -95,7 +100,7 @@ def handle_chat(msg):
     msg_text = msg['text']
     
     entrance = ["hi", "hello", "/help", "/start"]
-    start_msg = "Hi there. Currently I am able to search and return 5 cheapest properties for sale/rent listed on propertyguru.com.sg based on the following criteria:\
+    start_msg = "Hi there. Currently I am able to search and return cheapest properties for sale/rent based on the following criteria:\
                 \n1. location\
                 \n2. property types\
                 \n3. rent/sale\
@@ -112,9 +117,9 @@ def handle_chat(msg):
     else:
         context = nlp.get_context(msg_text)
         if (context == "property_rent"):
-            handle_property(chat_id, msg_text, forSale = False)
+            query_property(chat_id, msg_text, forSale = False)
         elif (context == "property_sale"):
-            handle_property(chat_id, msg_text, forSale = True)
+            query_property(chat_id, msg_text, forSale = True)
         else:
             error_msg = "Sorry, I am currently not smart enough to understand what you meant by <i>'" + msg_text + "'</i>"
             bot.sendMessage(chat_id, error_msg, parse_mode = 'HTML')

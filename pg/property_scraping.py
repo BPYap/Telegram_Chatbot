@@ -10,18 +10,7 @@ from bs4 import BeautifulSoup
 from district_code import district_code
 from district_code import hdb_estate
 from property_code import property_code
-
-class Property_listing:    
-    def __init__(self, location, description, type, size, fee, num_bed, num_bath, img_url, listing_url):
-        self.location = location
-        self.description = description
-        self.type = type
-        self.size = size
-        self.fee = fee
-        self.num_bed = num_bed
-        self.num_bath = num_bath
-        self.img_url = img_url
-        self.listing_url = listing_url
+from common.Property_listing import Property_listing
         
 def get_district_code(location):
     for code, districts in district_code.iteritems():

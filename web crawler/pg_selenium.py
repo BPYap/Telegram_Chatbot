@@ -92,8 +92,8 @@ if __name__ == "__main__":
             property_listings.clear()
         
         # rotate proxy ip every 100 pages visited to avoid anti-crawl detection
-        if (active_page % 100 == 0):
-            time.sleep(5)
+        if (active_page % 30 == 0):
+            time.sleep(6)
             # driver.quit()
             # if(not use_alt_proxy):
                 # desired_capability['proxy'] = {
@@ -121,6 +121,7 @@ if __name__ == "__main__":
         else:
             target_url = "https://www.propertyguru.com.sg/singapore-property-listing/property-for-rent/" + \
                         str(active_page + 1) + "?sort=price&order=asc&limit=30"
+            time.sleep(0.1)
             driver.get(target_url)
             try:
                 WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "show-filters")))
