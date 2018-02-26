@@ -1,5 +1,6 @@
 class Property_listing:    
-    def __init__(self, location, description, type, size, fee, num_bed, num_bath, img_url, listing_url):
+    def __init__(self, location, description, type, size, fee, 
+                 num_bed, num_bath, img_url, listing_url, sort_key):
         self.location = location
         self.description = description
         self.type = type
@@ -9,3 +10,4 @@ class Property_listing:
         self.num_bath = num_bath
         self.img_url = img_url
         self.listing_url = listing_url
+        self.sort_key = sort_key
