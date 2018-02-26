@@ -1,1 +1,1 @@
-Deprecated and Web Crawler directory are not related/included in final build
+Notes: - `deprecated` and `web crawler` directory are not related/included in final build
