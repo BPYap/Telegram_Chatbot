@@ -38,11 +38,11 @@ def query_property(chat_id, msg_text, forSale):
     type = "sale" if forSale else "rent"
     print "-------------------------- new property query (" + type + ") ------------------------"
     user_listing_buffer[chat_id].property_listings = pg.get_listing(driver, forSale, location, property_type)
-    user_listing_buffer[chat_id].property_listings.append(ninenine.get_listing(driver, forSale, location, property_type))
-    user_listing_buffer[chat_id].property_listings.append(ip.get_listing(driver, forSale, location, property_type))
+    user_listing_buffer[chat_id].property_listings.extend(ninenine.get_listing(driver, forSale, location, property_type))
+    #user_listing_buffer[chat_id].property_listings.append(ip.get_listing(driver, forSale, location, property_type))
     
     # sort by price
-    user_listing_buffer[chat_id].property_listings.sort(key=lambda listing: listing.fee)
+    user_listing_buffer[chat_id].property_listings.sort(key=lambda listing: listing.sort_key)
     
     if (len(user_listing_buffer[chat_id].property_listings) == 0):
         print "attempted to find " + location + ", but not found"
@@ -60,8 +60,8 @@ def query_property(chat_id, msg_text, forSale):
             print property.type
             print property.size
             print property.fee
-            print str(property.num_bed) + " bed"
-            print str(property.num_bath) + " bath"
+            print property.num_bed.encode('utf-8', 'ignore') + " bed"
+            print property.num_bath.encode('utf-8', 'ignore') + " bath"
             print property.listing_url
             print property.img_url
         
