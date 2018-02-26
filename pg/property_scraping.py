@@ -90,7 +90,8 @@ def get_listing(web_driver, forSale, location, property_type = ""):
             return tag
 
     for listing in soup.find_all(filter_listing):
-        num_bed = num_bath = 1 # default assumptions
+        num_bed = "1" # default assumptions
+        num_bath = "1"  # default assumptions
          
         location = listing.find(class_="listing-location").get_text()
         if(location == ""): # get location from other tag
@@ -103,13 +104,14 @@ def get_listing(web_driver, forSale, location, property_type = ""):
             for t in listing.find(class_="lst-rooms").find_all(title = True):
                 type += t['title'] + " "
                 if(t.has_attr('class') and 'bed' in t['class']):
-                    num_bed = int(t.get_text())
+                    num_bed = t.get_text()
                 elif(t.has_attr('class') and 'bath' in t['class']):
-                    num_bath = int(t.get_text())
+                    num_bath = t.get_text()
                 
         size = listing.find(class_="lst-sizes").get_text().split('·'.decode('utf-8'))[0]
         
         fee = listing.find(class_="listing-price").get_text()
+        sort_key = int(fee.replace("S$","").replace(",","").replace(" / mo",""))
         if (not forSale):
             fee += "nth"  # to complete the phrase from "per mo" to "per month"
         
@@ -121,7 +123,8 @@ def get_listing(web_driver, forSale, location, property_type = ""):
             
         listing_url = "https://www.propertyguru.com.sg/" + listing.find("a")["href"]
         
-        property_listings.append(Property_listing(location, description, type, size, fee, num_bed, num_bath, img_url, listing_url))
+        property_listings.append(Property_listing(location, description, type, size, fee, 
+                                 num_bed, num_bath, img_url, listing_url, sort_key))
     
     return property_listings
     
