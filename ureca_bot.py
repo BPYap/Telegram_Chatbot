@@ -5,8 +5,11 @@ from telepot.loop import MessageLoop
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from selenium import webdriver
 
-import pg.property_scraping as pg
 from common import nlp
+# modules for different crawler
+import pg.property_scraping as pg
+import ninenine.property_scraping as ninenine
+import ip.property_scraping as ip
 
 # initializes web driver
 driver = webdriver.Firefox()
@@ -35,6 +38,11 @@ def query_property(chat_id, msg_text, forSale):
     type = "sale" if forSale else "rent"
     print "-------------------------- new property query (" + type + ") ------------------------"
     user_listing_buffer[chat_id].property_listings = pg.get_listing(driver, forSale, location, property_type)
+    user_listing_buffer[chat_id].property_listings.append(ninenine.get_listing(driver, forSale, location, property_type))
+    user_listing_buffer[chat_id].property_listings.append(ip.get_listing(driver, forSale, location, property_type))
+    
+    # sort by price
+    user_listing_buffer[chat_id].property_listings.sort(key=lambda listing: listing.fee)
     
     if (len(user_listing_buffer[chat_id].property_listings) == 0):
         print "attempted to find " + location + ", but not found"
