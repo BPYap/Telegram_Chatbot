@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import time
 
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.support.ui import WebDriverWait 
 from selenium.webdriver.support import expected_conditions as EC 
+from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 
 from property_code import property_code
@@ -62,11 +65,23 @@ def get_listing(web_driver, forSale, location, property_type = ""):
     web_driver.get(target_url)
     WebDriverWait(web_driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "ListingItem-innerWrapper")))
     
+    no_result = False # flag as indicator when no result found
     # type location in text box and choose first result
-    
-    # flag as indicator when no result found
-    no_result = False
-    
+    input_box = web_driver.find_element_by_xpath("//input[@class='typeahead tt-input']")
+    input_box.send_keys(location)
+    try:
+        WebDriverWait(web_driver, 5).until(EC.presence_of_element_located((By.CLASS_NAME, "tt-suggestions")))
+        attempt = 0
+        while (attempt < 10):
+            try:
+                web_driver.find_element_by_xpath("//*[@class='tt-suggestions']").send_keys(Keys.ENTER)
+                break
+            except StaleElementReferenceException:
+                attempt += 1
+    except TimeoutException:
+        no_result = True
+        
+    time.sleep(1)
     html_doc = web_driver.page_source
 
     # grab desire contents from the html documnet with beautifulsoup
@@ -96,11 +111,11 @@ def get_listing(web_driver, forSale, location, property_type = ""):
         fee = listing.find(class_="ListingItem-price").get_text()
         sort_key = int(fee.replace("$","").replace(",",""))
         if (not forSale):
-            fee += " / month"
+            fee = "S" + fee + " / month"
         
         style = listing.find(class_="listing-carousel-image")["style"]
         if ("url" in style.split(";")[1]):
-            img_url = style.split(";")[1][22:-2]
+            img_url = style.split(";")[1][24:-2]
         else:
             img_url = "99.co/static/img/placeholder/image-placeholder.png"
             
