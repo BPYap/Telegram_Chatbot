@@ -1,9 +1,11 @@
+import argparse
 import time
 
 import telepot
 from telepot.loop import MessageLoop
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 
 from common import nlp
 # modules for different crawler
@@ -11,8 +13,16 @@ import pg.property_scraping as pg
 import ninenine.property_scraping as ninenine
 import ip.property_scraping as ip
 
+# handles argument parsing
+parser = argparse.ArgumentParser()
+parser.add_argument("--headless", default=0)
+args = parser.parse_args()
+
 # initializes web driver
-driver = webdriver.Firefox()
+options = Options()
+if args.headless:
+    options.add_argument("--headless") 
+driver = webdriver.Firefox(firefox_options=options)
 driver.implicitly_wait(5)
 
 # initializes telegram bot
