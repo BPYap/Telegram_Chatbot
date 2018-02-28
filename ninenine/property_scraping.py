@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import time
+import time 
 
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
@@ -22,7 +22,7 @@ def get_property_code(property_type):
     if (property_type == ""):
         return ""
     for code, info in property_code.iteritems():
-        if (property_type.lower() in info["type"]):
+        if (any(property_type.lower() == type for type in info["type"])):
             return code
     return ""
 
@@ -44,7 +44,7 @@ def get_listing(web_driver, forSale, location, property_type = ""):
     for p in property_type.split('_'):
         pcode = get_property_code(p)
         if (pcode != ""):
-            if(pcode == "condo" or pcode == "landed" or pcode == "hdb"):
+            if(pcode in ["condo", "landed", "hdb"]):
                 if (not main_flag):
                     target_url += "&main_category=" + pcode
                     main_flag = True
@@ -54,7 +54,7 @@ def get_listing(web_driver, forSale, location, property_type = ""):
     for p in property_type.split('_'):
         pcode = get_property_code(p)
         if (pcode != ""):
-            if(pcode != "condo" or pcode != "landed" or pcode != "hdb"):
+            if(pcode not in ["condo", "landed", "hdb"]):
                 if (not sub_flag):
                     target_url += "&sub_categories=" + pcode
                     sub_flag = True
@@ -67,21 +67,22 @@ def get_listing(web_driver, forSale, location, property_type = ""):
     
     no_result = False # flag as indicator when no result found
     # type location in text box and choose first result
-    input_box = web_driver.find_element_by_xpath("//input[@class='typeahead tt-input']")
-    input_box.send_keys(location)
-    try:
-        WebDriverWait(web_driver, 5).until(EC.presence_of_element_located((By.CLASS_NAME, "tt-suggestions")))
-        attempt = 0
-        while (attempt < 10):
-            try:
-                web_driver.find_element_by_xpath("//*[@class='tt-suggestions']").send_keys(Keys.ENTER)
-                break
-            except StaleElementReferenceException:
-                attempt += 1
-    except TimeoutException:
-        no_result = True
+    if location:
+        input_box = web_driver.find_element_by_xpath("//input[@class='typeahead tt-input']")
+        input_box.send_keys(location)
+        try:
+            WebDriverWait(web_driver, 5).until(EC.presence_of_element_located((By.CLASS_NAME, "tt-suggestions")))
+            attempt = 0
+            while (attempt < 10):
+                try:
+                    web_driver.find_element_by_xpath("//*[@class='tt-suggestions']").send_keys(Keys.ENTER)
+                    time.sleep(1.5)
+                    break
+                except StaleElementReferenceException:
+                    attempt += 1
+        except TimeoutException:
+            no_result = True
         
-    time.sleep(1)
     html_doc = web_driver.page_source
 
     # grab desire contents from the html documnet with beautifulsoup
@@ -115,11 +116,14 @@ def get_listing(web_driver, forSale, location, property_type = ""):
         
         style = listing.find(class_="listing-carousel-image")["style"]
         if ("url" in style.split(";")[1]):
-            img_url = style.split(";")[1][24:-2]
+            if (forSale):
+                img_url = style.split(";")[1][24:-2]
+            else:
+                img_url = style.split(";")[1][22:-2]
         else:
             img_url = "99.co/static/img/placeholder/image-placeholder.png"
-            
-        print img_url
+        if img_url[0] == "t":
+            img_url = "ht" + img_url # temporary work around for truncated image url
             
         listing_url = "https://99.co" + listing["href"]
         
