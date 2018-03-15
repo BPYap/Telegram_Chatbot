@@ -109,8 +109,8 @@ def get_listing(web_driver, forSale, location, property_type = ""):
                 
         size = listing.find(class_="sqft").get_text()
         
-        fee = listing.find(class_="ListingItem-price").get_text()
-        sort_key = int(fee.replace("$","").replace(",",""))
+        fee = "S" + listing.find(class_="ListingItem-price").get_text()
+        sort_key = int(fee.replace("S$","").replace(",",""))
         if (not forSale):
             fee = "S" + fee + " / month"
         
