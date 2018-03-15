@@ -48,8 +48,8 @@ def query_property(chat_id, msg_text, forSale):
     type = "sale" if forSale else "rent"
     print "-------------------------- new property query (" + type + ") ------------------------"
     user_listing_buffer[chat_id].property_listings = pg.get_listing(driver, forSale, location, property_type)
-    user_listing_buffer[chat_id].property_listings.extend(ninenine.get_listing(driver, forSale, location, property_type))
-    #user_listing_buffer[chat_id].property_listings.append(ip.get_listing(driver, forSale, location, property_type))
+    #user_listing_buffer[chat_id].property_listings.extend(ninenine.get_listing(driver, forSale, location, property_type))
+    #user_listing_buffer[chat_id].property_listings.extend(ip.get_listing(driver, forSale, location, property_type))
     
     # sort by price
     user_listing_buffer[chat_id].property_listings.sort(key=lambda listing: listing.sort_key)
