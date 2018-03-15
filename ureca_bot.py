@@ -11,7 +11,7 @@ from common import nlp
 # modules for different crawler
 import pg.property_scraping as pg
 import ninenine.property_scraping as ninenine
-import ip.property_scraping as ip
+import srx.property_scraping as srx
 
 # handles argument parsing
 parser = argparse.ArgumentParser()
@@ -49,7 +49,7 @@ def query_property(chat_id, msg_text, forSale):
     print "-------------------------- new property query (" + type + ") ------------------------"
     user_listing_buffer[chat_id].property_listings = pg.get_listing(driver, forSale, location, property_type)
     #user_listing_buffer[chat_id].property_listings.extend(ninenine.get_listing(driver, forSale, location, property_type))
-    #user_listing_buffer[chat_id].property_listings.extend(ip.get_listing(driver, forSale, location, property_type))
+    #user_listing_buffer[chat_id].property_listings.extend(srx.get_listing(driver, forSale, location, property_type))
     
     # sort by price
     user_listing_buffer[chat_id].property_listings.sort(key=lambda listing: listing.sort_key)
