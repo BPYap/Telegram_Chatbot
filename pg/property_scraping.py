@@ -110,10 +110,13 @@ def get_listing(web_driver, forSale, location, property_type = ""):
                 
         size = listing.find(class_="lst-sizes").get_text().split('·'.decode('utf-8'))[0]
         
-        fee = listing.find(class_="listing-price").get_text()
-        sort_key = int(fee.replace("S$","").replace(",","").replace(" / mo",""))
-        if (not forSale):
-            fee += "nth"  # to complete the phrase from "per mo" to "per month"
+        if (listing.find(class_="listing-price")):
+            fee = listing.find(class_="listing-price").get_text()
+            sort_key = int(fee.replace("S$","").replace(",","").replace(" / mo",""))
+            if (not forSale):
+                fee += "nth"  # to complete the phrase from "per mo" to "per month"
+        else:
+            continue # skips listing without price
         
         img_url = ""
         try:
