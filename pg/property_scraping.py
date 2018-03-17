@@ -70,7 +70,10 @@ def get_listing(web_driver, forSale, location, property_type = ""):
     
     # navigate to target_url, then fetch its page source once "search-title" is located (indicate page is fully loaded)
     web_driver.get(target_url)
-    WebDriverWait(web_driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "search-title")))
+    try:
+        WebDriverWait(web_driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "search-title")))
+    except TimeoutException:
+        return []
     html_doc = web_driver.page_source
 
     # grab desire contents from the html documnet with beautifulsoup
@@ -79,10 +82,10 @@ def get_listing(web_driver, forSale, location, property_type = ""):
     # return empty list if no result
     result = soup.find(class_="title search-title").find("span").get_text()
     if ("No results" in result):
-        return property_listings
+        return []
     elif (soup.find(class_="search-suggest")):
         if("Sorry" in soup.find(class_="search-suggest").get_text()):
-            return property_listings
+            return []
 
     # helper callback
     def filter_listing(tag):
@@ -108,10 +111,14 @@ def get_listing(web_driver, forSale, location, property_type = ""):
                 elif(t.has_attr('class') and 'bath' in t['class']):
                     num_bath = t.get_text()
                 
-        size = listing.find(class_="lst-sizes").get_text().split('·'.decode('utf-8'))[0]
+        size = ""
+        size_tag = listing.find(class_="lst-sizes")
+        if (size_tag):
+            size = size_tag.get_text().split('·'.decode('utf-8'))[0]
         
-        if (listing.find(class_="listing-price")):
-            fee = listing.find(class_="listing-price").get_text()
+        price_tag = listing.find(class_="listing-price")
+        if (price_tag):
+            fee = price_tag.get_text()
             sort_key = int(fee.replace("S$","").replace(",","").replace(" / mo",""))
             if (not forSale):
                 fee += "nth"  # to complete the phrase from "per mo" to "per month"

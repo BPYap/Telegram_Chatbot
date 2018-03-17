@@ -63,9 +63,11 @@ def get_listing(web_driver, forSale, location, property_type = ""):
     
     # navigate to target_url, then fetch its page source once keywords is located (indicate page is fully loaded)
     web_driver.get(target_url)
-    WebDriverWait(web_driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "ListingItem-innerWrapper")))
-    
-    no_result = False # flag as indicator when no result found
+    try:
+        WebDriverWait(web_driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "ListingItem-innerWrapper")))
+    except TimeoutException:
+        return []
+
     # type location in text box and choose first result
     if location:
         input_box = web_driver.find_element_by_xpath("//input[@class='typeahead tt-input']")
@@ -81,38 +83,40 @@ def get_listing(web_driver, forSale, location, property_type = ""):
                 except StaleElementReferenceException:
                     attempt += 1
         except TimeoutException:
-            no_result = True
+            return []
         
     html_doc = web_driver.page_source
 
     # grab desire contents from the html documnet with beautifulsoup
     soup = BeautifulSoup(html_doc, 'html.parser')
-    
-    # return empty list if no result
-    if (no_result):
-        return property_listings
 
     for listing in soup.find_all(attrs={"class":"ListingItem-innerWrapper"}):
-        num_bed = "1" # default assumptions
-        num_bath = "1"  # default assumptions
-         
         location = listing.find(class_="location").get_text()
         
         description = ""
-        if (listing.find(class_="arrowContainer__3JU_o")):
-            description = listing.find(class_="arrowContainer__3JU_o").get_text()
+        description_tag = listing.find(class_="arrowContainer__3JU_o")
+        if (description_tag):
+            description = description_tag.get_text()
         
-        type = ""
-        num_bed = listing.find(class_="bedrooms").get_text()
-        if (listing.find(class_="bathrooms")):
-            num_bath = listing.find(class_="bathrooms").get_text()
-                
-        size = listing.find(class_="sqft").get_text()
+        num_bed = ""
+        room_tag = listing.find(class_="bedrooms")
+        if (room_tag):
+            num_bed = room_tag.get_text()
+        
+        num_bath = ""
+        bath_tag = listing.find(class_="bathrooms")
+        if (bath_tag):
+            num_bath = bath_tag.get_text()
+        
+        size = ""
+        size_tag = listing.find(class_="sqft")
+        if (size_tag):
+            size = size_tag.get_text()
         
         fee = "S" + listing.find(class_="ListingItem-price").get_text()
         sort_key = int(fee.replace("S$","").replace(",",""))
         if (not forSale):
-            fee = "S" + fee + " / month"
+            fee = fee + " / month"
         
         style = listing.find(class_="listing-carousel-image")["style"]
         if ("url" in style.split(";")[1]):
@@ -127,7 +131,7 @@ def get_listing(web_driver, forSale, location, property_type = ""):
             
         listing_url = "https://99.co" + listing["href"]
         
-        property_listings.append(Property_listing(location, description, type, size, fee, 
+        property_listings.append(Property_listing(location, description, "", size, fee, 
                                  num_bed, num_bath, img_url, listing_url, sort_key))
     
     return property_listings
