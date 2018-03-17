@@ -33,7 +33,7 @@ def get_property_code(property_type):
             return (code, info["isHdb"])
     return ("", None)
 
-def get_listing(web_driver, forSale, location, property_type = ""): 
+def get_listing(result_list, web_driver, forSale, location, property_type = ""): 
     # web crawler function to get property listings from propertyguru.com.sg
     # web_driver: selenium webdriver object
     # forSale: boolean value to indicate whether to find properties for Sale/ for Rental
@@ -73,7 +73,8 @@ def get_listing(web_driver, forSale, location, property_type = ""):
     try:
         WebDriverWait(web_driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "search-title")))
     except TimeoutException:
-        return []
+        result_list[:] = []
+        return
     html_doc = web_driver.page_source
 
     # grab desire contents from the html documnet with beautifulsoup
@@ -82,10 +83,12 @@ def get_listing(web_driver, forSale, location, property_type = ""):
     # return empty list if no result
     result = soup.find(class_="title search-title").find("span").get_text()
     if ("No results" in result):
-        return []
+        result_list[:] = []
+        return
     elif (soup.find(class_="search-suggest")):
         if("Sorry" in soup.find(class_="search-suggest").get_text()):
-            return []
+            result_list[:] = []
+            return
 
     # helper callback
     def filter_listing(tag):
@@ -136,6 +139,6 @@ def get_listing(web_driver, forSale, location, property_type = ""):
         property_listings.append(Property_listing(location, description, type, size, fee, 
                                  num_bed, num_bath, img_url, listing_url, sort_key))
     
-    return property_listings
+    result_list[:] = property_listings
     
     

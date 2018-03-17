@@ -18,7 +18,7 @@ def get_property_code(property_type):
             return code
     return ""
 
-def get_listing(web_driver, forSale, location, property_type = ""): 
+def get_listing(result_list, web_driver, forSale, location, property_type = ""): 
     # web_driver: selenium webdriver object
     # forSale: boolean value to indicate whether to find properties for Sale/ for Rental
     # location: string value to specify which location to search for
@@ -38,17 +38,21 @@ def get_listing(web_driver, forSale, location, property_type = ""):
         target_url = "https://www.srx.com.sg/search/sale/" + pcode + "/" + location + "/?orderCriteria=priceAsc"
         if(not forSale):
             target_url = "https://www.srx.com.sg/search/rent/" + pcode + "/" + location + "/?orderCriteria=priceAsc"
-    else:
+    elif property_type == "":
         target_url = "https://www.srx.com.sg/search/sale/residential/" + location + "?orderCriteria=priceAsc"
         if (not forSale):
             target_url = "https://www.srx.com.sg/search/rent/residential/" + location + "?orderCriteria=priceAsc"
+    else:
+        result_list[:] = []
+        return
     
     # navigate to target_url, then fetch its page source once keywords is located (indicate page is fully loaded)
     web_driver.get(target_url)
     try:
         WebDriverWait(web_driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "listing")))
     except TimeoutException:
-        return []
+        result_list[:] = []
+        return
         
     html_doc = web_driver.page_source
 
@@ -105,6 +109,6 @@ def get_listing(web_driver, forSale, location, property_type = ""):
         property_listings.append(Property_listing(location, description, "", size, fee, 
                                  num_bed, num_bath, img_url, listing_url, sort_key))
     
-    return property_listings
+    result_list[:] = property_listings
     
     
