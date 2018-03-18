@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import re
 import time 
 
 from selenium.webdriver.common.by import By
@@ -121,15 +122,12 @@ def get_listing(result_list, web_driver, forSale, location, property_type = ""):
             fee = fee + " / month"
         
         style = listing.find(class_="listing-carousel-image")["style"]
-        if ("url" in style.split(";")[1]):
-            if (forSale):
-                img_url = style.split(";")[1][24:-2]
-            else:
-                img_url = style.split(";")[1][22:-2]
+        print style
+        matched_url = re.match(r".*(https.*)['\"]\);", style)
+        if (matched_url):
+            img_url = matched_url.group(1)
         else:
             img_url = "99.co/static/img/placeholder/image-placeholder.png"
-        if img_url[0] == "t":
-            img_url = "ht" + img_url # temporary work around for truncated image url
             
         listing_url = "https://99.co" + listing["href"]
         
