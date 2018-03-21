@@ -4,6 +4,4 @@ pg/district_code.py
 pg/property_code.py
 *.p
 ninenine/property_code.py
-
 srx/property_code.py
-
